@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Arcade – Multiplayer Game</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ═══════════ JOIN SCREEN ═══════════ -->
+  <div id="joinScreen" class="screen active">
+    <div class="cosmic-bg"></div>
+    <div class="join-container">
+      <h1 class="game-title">
+        <span class="title-crystal">▲</span>
+        NEON ARCADE
+        <span class="title-crystal">▼</span>
+      </h1>
+      <p class="game-subtitle">Collect · Survive · Dominate</p>
+
+      <!-- Shared name field -->
+      <div class="name-row">
+        <label class="field-label" for="playerName">Your Name</label>
+        <input type="text" id="playerName" placeholder="Enter your name" maxlength="12" autocomplete="off">
+      </div>
+
+      <!-- Two-card layout -->
+      <div class="mode-cards">
+
+        <!-- CREATE card -->
+        <div class="mode-card" id="createCard">
+          <div class="mode-card-icon">🚀</div>
+          <h2 class="mode-card-title">Create Game</h2>
+          <p class="mode-card-desc">Start a new session and invite friends with your Game ID.</p>
+          <button id="createBtn" class="btn-primary">
+            <span class="btn-glow"></span>
+            <span class="btn-text">Create Game</span>
+          </button>
+        </div>
+
+        <div class="mode-divider">or</div>
+
+        <!-- JOIN card -->
+        <div class="mode-card" id="joinCard">
+          <div class="mode-card-icon">🎮</div>
+          <h2 class="mode-card-title">Join Game</h2>
+          <p class="mode-card-desc">Enter the 6-character Game ID shared by the host.</p>
+          <label class="field-label" for="gameIdInput">Game ID</label>
+          <input type="text" id="gameIdInput" placeholder="e.g. AB3C7X" maxlength="6" autocomplete="off" style="text-transform:uppercase">
+          <button id="joinBtn" class="btn-primary">
+            <span class="btn-glow"></span>
+            <span class="btn-text">Join Game</span>
+          </button>
+        </div>
+
+      </div>
+
+      <div id="errorMessage" class="error-message"></div>
+
+      <div class="controls-hint">
+        <p>Move: <kbd>W A S D</kbd> or <kbd>↑ ← ↓ →</kbd> &nbsp;|&nbsp; Menu: <kbd>ESC</kbd> or <kbd>☰</kbd></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ LOBBY SCREEN ═══════════ -->
+  <div id="lobbyScreen" class="screen">
+    <div class="cosmic-bg"></div>
+    <div class="lobby-container">
+      <h2 class="lobby-title">Battle Arena</h2>
+      <div id="devModeBadge" class="dev-badge" style="display:none">🛠️ DEV MODE</div>
+
+      <div class="game-id-display">
+        Game ID: <span id="displayGameId" class="game-id-code"></span>
+        <button id="copyIdBtn" class="btn-copy" title="Copy ID">⎘</button>
+      </div>
+
+      <div class="players-waiting">
+        <h3>Players Ready <span id="playerCount" class="player-count"></span></h3>
+        <div id="playersList" class="players-list"></div>
+      </div>
+
+      <div class="lobby-info">
+        <p id="lobbyStatusMsg">Waiting for host to start the game…</p>
+        <p class="lobby-instructions">Share the Game ID with your opponents!</p>
+      </div>
+
+      <div id="startGameContainer" class="start-game-container" style="display:none">
+        <p class="host-note">You are the host. Start when all players are ready.</p>
+        <button id="startGameBtn" class="btn-primary">
+          <span class="btn-glow"></span>
+          <span class="btn-text">Launch Game</span>
+        </button>
+        <p id="startError" class="start-error"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ GAME SCREEN ═══════════ -->
+  <div id="gameScreen" class="screen">
+
+    <!-- HUD (always on top) -->
+    <div class="hud">
+      <div class="hud-left">
+        <div class="timer-display">
+          <span class="timer-icon">⏱</span>
+          <span id="timer" class="timer-value">2:00</span>
+        </div>
+      </div>
+      <div class="hud-center">
+        <div id="scoresList" class="scores-list"></div>
+      </div>
+      <div class="hud-right">
+        <button id="menuBtn" class="btn-menu" title="Menu (ESC)">☰</button>
+      </div>
+    </div>
+
+    <!-- In-game pause menu -->
+    <div id="gameMenu" class="game-menu" aria-modal="true" aria-label="Game Menu" hidden>
+      <div class="menu-content">
+        <h2 class="menu-title">⏸ Paused</h2>
+        <button id="resumeBtn" class="btn-primary">
+          <span class="btn-text">▶ Resume</span>
+        </button>
+        <button id="quitBtn" class="btn-secondary">
+          <span class="btn-text">✕ Quit Game</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="notifications" class="notifications" aria-live="polite"></div>
+
+    <!-- In-game chat -->
+    <div id="chatPanel" class="chat-panel">
+      <div id="chatMessages" class="chat-messages"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Chat…" maxlength="100" autocomplete="off">
+        <button id="chatSendBtn" class="chat-send-btn">➤</button>
+      </div>
+    </div>
+
+    <!-- Arena (behind HUD) -->
+    <div id="gameArena" class="game-arena">
+      <div class="arena-grid"></div>
+      <div id="gameObjects" class="game-objects"></div>
+      
+      <!-- End game overlay (appears over frozen arena) -->
+      <div id="endOverlay" class="end-overlay" hidden>
+        <div class="end-content" id="endContent">
+          <button id="minimizeEndBtn" class="btn-minimize" title="Minimize">−</button>
+          <h1 class="end-title">GAME OVER</h1>
+          <div id="winnerDisplay" class="winner-display"></div>
+          <div id="finalScores" class="final-scores"></div>
+          <button id="playAgainBtn" class="btn-primary">
+            <span class="btn-glow"></span>
+            <span class="btn-text">PLAY AGAIN</span>
+          </button>
+        </div>
+        
+        <!-- Minimized compact view -->
+        <div class="end-compact" id="endCompact" hidden>
+          <button id="restoreEndBtn" class="btn-restore" title="Restore">+</button>
+          <div class="compact-status">Game Over</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ END SCREEN (keeping for compatibility) ═══════════ -->
+  <div id="endScreen" class="screen">
+    <div class="cosmic-bg"></div>
+    <div class="end-container">
+      <p style="color: var(--color-text-dim);">Game ended. Redirecting...</p>
+    </div>
+  </div>
+
+  <!-- Viewport too small warning -->
+  <div id="viewportWarning" class="viewport-warning">
+    <div class="viewport-warning-content">
+      <h2>⚠️ Window Too Small</h2>
+      <p>Please resize your window to at least <strong>800×600</strong> for the best gameplay experience.</p>
+      <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--color-text-dim);">Current: <span id="currentSize"></span></p>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
